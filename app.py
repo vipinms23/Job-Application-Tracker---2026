@@ -104,35 +104,57 @@ with tab1:
 
 with tab2:
     st.header("Job Description Analyzer")
+    
+    analysis_mode = st.radio("Analysis Mode", ["AI Mode (Groq)", "Keyword Mode"], horizontal=True)
+    
     user_skills_text = st.text_input("Your Tech Stack (comma separated)", "python, sql, git")
     jd_text = st.text_area("Paste Job Description Here", height=200)
     
     if st.button("Analyze Match"):
         if jd_text.strip():
             user_skills_list = [s.strip() for s in user_skills_text.split(',')]
-            jd_skills = anlz.extract_skills(jd_text)
             
-            if jd_skills:
-                result = anlz.analyze_match(jd_skills, user_skills_list)
+            with st.spinner("Analyzing..."):
+                if "AI Mode" in analysis_mode:
+                    result = anlz.analyze_match_ai(jd_text, user_skills_list)
+                else:
+                    jd_skills = anlz.extract_skills(jd_text)
+                    result = anlz.analyze_match(jd_skills, user_skills_list)
+                    result["required_skills"] = jd_skills
+                    result["summary"] = "Basic keyword matching analysis complete."
+                    result["mode_used"] = "Keyword"
+            
+            st.info(f"Result produced using: **{result.get('mode_used', 'Keyword')} Mode**")
+            
+            if result.get("summary"):
+                st.write(result["summary"])
                 
-                st.metric("Match Score", f"{result['match_score']}%")
-                
-                a_col1, a_col2 = st.columns(2)
-                with a_col1:
-                    st.success("Skills You Have")
-                    if result["have_skills"]:
-                        for s in result["have_skills"]:
-                            st.write(f"- {s.title()}")
-                    else:
-                        st.write("None")
-                with a_col2:
-                    st.error("Missing Skills")
-                    if result["missing_skills"]:
-                        for s in result["missing_skills"]:
-                            st.write(f"- {s.title()}")
-                    else:
-                        st.write("None")
-            else:
-                st.warning("No recognized skills found in this job description.")
+            st.metric("Match Score", f"{result.get('match_score', 0)}%")
+            
+            a_col1, a_col2, a_col3 = st.columns(3)
+            with a_col1:
+                st.info("Required Skills")
+                req = result.get("required_skills", [])
+                if req:
+                    for s in req:
+                        st.write(f"- {s.title()}")
+                else:
+                    st.write("None")
+            with a_col2:
+                st.success("Skills You Have")
+                have = result.get("have_skills", [])
+                if have:
+                    for s in have:
+                        st.write(f"- {s.title()}")
+                else:
+                    st.write("None")
+            with a_col3:
+                st.error("Missing Skills")
+                missing = result.get("missing_skills", [])
+                if missing:
+                    for s in missing:
+                        st.write(f"- {s.title()}")
+                else:
+                    st.write("None")
         else:
             st.warning("Please paste a job description first.")
