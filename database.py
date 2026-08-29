@@ -74,7 +74,7 @@ def get_dashboard_stats():
     cursor.execute('SELECT COUNT(*) FROM applications WHERE stage = "Offer"')
     offers = cursor.fetchone()[0]
     
-    cursor.execute('SELECT COUNT(*) FROM applications WHERE stage IN ("OA", "Interview", "Offer")')
+    cursor.execute('SELECT COUNT(*) FROM applications WHERE stage IN ("Online Assessment", "Interview", "Offer")')
     responses = cursor.fetchone()[0]
     
     response_rate = (responses / total * 100) if total > 0 else 0

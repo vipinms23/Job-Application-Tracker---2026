@@ -19,7 +19,7 @@ st.divider()
 # --- Sidebar ---
 with st.sidebar:
     st.header("Filters")
-    filter_stage = st.selectbox("Filter by Stage", ["All", "Applied", "OA", "Interview", "Offer", "Rejected"])
+    filter_stage = st.selectbox("Filter by Stage", ["All", "Applied", "Online Assessment", "Interview", "Offer", "Rejected"])
     search_text = st.text_input("Search Company/Role")
     
     st.divider()
@@ -29,7 +29,7 @@ with st.sidebar:
         company = st.text_input("Company")
         role = st.text_input("Role")
         salary = st.text_input("Salary")
-        stage = st.selectbox("Stage", ["Applied", "OA", "Interview", "Offer", "Rejected"])
+        stage = st.selectbox("Stage", ["Applied", "Online Assessment", "Interview", "Offer", "Rejected"])
         date_applied = st.date_input("Date Applied")
         job_link = st.text_input("Job Link")
         
@@ -75,7 +75,7 @@ if applications:
         col4.write(app["applied_on"])
         
         # Dropdown to change stage
-        stages = ["Applied", "OA", "Interview", "Offer", "Rejected"]
+        stages = ["Applied", "Online Assessment", "Interview", "Offer", "Rejected"]
         current_index = stages.index(app["stage"]) if app["stage"] in stages else 0
         new_stage = col5.selectbox(
             "Stage", 
