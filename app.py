@@ -1,8 +1,8 @@
 import streamlit as st
+import database as db
 
-# Initialize session state to store applications if it doesn't exist
-if 'applications' not in st.session_state:
-    st.session_state.applications = []
+# Initialize the database
+db.init_db()
 
 st.title("Job Application Tracker")
 
@@ -20,24 +20,26 @@ with st.sidebar:
         
         submit_button = st.form_submit_button("Add Application")
         
-        # When form is submitted, add the structured data to session state
+        # When form is submitted, add the structured data to the database
         if submit_button:
-            new_app = {
-                "Company": company,
-                "Role": role,
-                "Salary": salary,
-                "Stage": stage,
-                "Date Applied": date_applied.strftime("%Y-%m-%d"),
-                "Job Link": job_link
-            }
-            st.session_state.applications.append(new_app)
+            db.add_application(
+                company=company,
+                role=role,
+                salary=salary,
+                stage=stage,
+                applied_on=date_applied.strftime("%Y-%m-%d"),
+                link=job_link
+            )
             st.success("Application added successfully!")
 
 # 2. Main area to display applications
 st.header("Your Applications")
 
-if st.session_state.applications:
+# Fetch applications from the database
+applications = db.get_all_applications()
+
+if applications:
     # Streamlit automatically renders a list of dictionaries as a nice table
-    st.dataframe(st.session_state.applications, use_container_width=True)
+    st.dataframe(applications, use_container_width=True)
 else:
     st.info("No applications added yet. Use the sidebar to add one!")
