@@ -38,14 +38,54 @@ def add_application(company, role, salary, stage, applied_on, link):
     conn.commit()
     conn.close()
 
-def get_all_applications():
-    """Retrieve all job applications from the database."""
+def get_all_applications(stage_filter="All", search_text=""):
+    """Retrieve all job applications from the database, with optional filtering."""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM applications')
+    
+    query = 'SELECT * FROM applications WHERE 1=1'
+    params = []
+    
+    if stage_filter != "All":
+        query += ' AND stage = ?'
+        params.append(stage_filter)
+        
+    if search_text:
+        query += ' AND (Company LIKE ? OR Role LIKE ?)'
+        params.append(f'%{search_text}%')
+        params.append(f'%{search_text}%')
+        
+    cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
+
+def get_dashboard_stats():
+    """Calculate dashboard statistics."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT COUNT(*) FROM applications')
+    total = cursor.fetchone()[0]
+    
+    cursor.execute('SELECT COUNT(*) FROM applications WHERE stage = "Interview"')
+    interviews = cursor.fetchone()[0]
+    
+    cursor.execute('SELECT COUNT(*) FROM applications WHERE stage = "Offer"')
+    offers = cursor.fetchone()[0]
+    
+    cursor.execute('SELECT COUNT(*) FROM applications WHERE stage IN ("OA", "Interview", "Offer")')
+    responses = cursor.fetchone()[0]
+    
+    response_rate = (responses / total * 100) if total > 0 else 0
+    
+    conn.close()
+    return {
+        "total": total,
+        "interviews": interviews,
+        "offers": offers,
+        "response_rate": response_rate
+    }
 
 def update_application_stage(app_id, new_stage):
     """Update the stage of a specific job application."""
